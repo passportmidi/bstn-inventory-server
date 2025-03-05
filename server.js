@@ -1,6 +1,7 @@
 import express from "express";
 import "dotenv/config";
 import cors from "cors";
+import warehouseRoutes from "./routes/warehouse-routes.js"
 
 const app = express();
 

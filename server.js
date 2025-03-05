@@ -5,9 +5,7 @@ import warehouseRoutes from './routes/warehouseRoutes.js';
 
 const app = express();
 
-const { CORS_ORIGIN } = process.env;
-
-app.use(cors({ origin: CORS_ORIGIN }));
+app.use(cors());
 
 const PORT = process.env.PORT || 8081;
 

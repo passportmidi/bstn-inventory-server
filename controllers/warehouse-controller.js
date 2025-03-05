@@ -14,7 +14,7 @@ const getAllWarehouses = async (req, res) => {
 
 const findOneWarehouse = async (req, res) => {
   try {
-    const warehousesFound = await knex("warehouse").where({
+    const warehousesFound = await knex("warehouses").where({
       id: req.params.id,
     });
 
@@ -33,4 +33,19 @@ const findOneWarehouse = async (req, res) => {
   }
 };
 
-export { getAllWarehouses, findOneWarehouse };
+const deleteWarehouse = async (req, res) => {
+  try {
+    await knex("warehouses")
+      .where({
+        id: req.params.id,
+      })
+      .del();
+    res.sendStatus(204);
+  } catch {
+    res
+      .status(400)
+      .json({ message: `Error deleting warehouse ${req.params.id}` });
+  }
+};
+
+export { getAllWarehouses, findOneWarehouse, deleteWarehouse };

@@ -1,8 +1,8 @@
-// import express from "express";
-// import * as warehouseController from "../controllers/warehouse-controller.js";
+import express from "express";
+import * as warehouseController from "../controllers/warehouse-controller.js";
 
-// const router = express.Router();
+const router = express.Router();
 
-// router.route("/:id").get(warehouseController.findOneWarehouse);
+router.route("/:id").get(warehouseController.findOneWarehouse);
 
-// export default router;
+export default router;

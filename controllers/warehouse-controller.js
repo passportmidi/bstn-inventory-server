@@ -1,4 +1,3 @@
-all knex import statements - placeholders
 import initKnex from "knex";
 import configuration from "../knexfile.js";
 import knex from '../db/knex.js'; 

@@ -1,6 +1,5 @@
 import initKnex from "knex";
 import configuration from "../knexfile.js";
-import knex from "../db/knex.js";
 const knex = initKnex(configuration);
 
 const getAllWarehouses = async (req, res) => {

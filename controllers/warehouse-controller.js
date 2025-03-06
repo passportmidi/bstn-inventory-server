@@ -48,4 +48,29 @@ const deleteWarehouse = async (req, res) => {
   }
 };
 
-export { getAllWarehouses, findOneWarehouse, deleteWarehouse };
+const getAllWarehouseInventories = async (req, res) => {
+  try {
+    const warehouseInventories = await knex("inventories").where({
+      warehouse_id: req.params.id,
+    });
+
+    if (warehouseInventories.length === 0) {
+      return res.status(404).json({
+        message: `No inventories found for Warehouse with ID ${req.params.id} not found`,
+      });
+    }
+
+    res.status(200).json(warehouseInventories);
+  } catch (error) {
+    res.status(500).json({
+      message: `Unable to retrieve warehouse inventory data for warehouse with ID ${req.params.id}`,
+    });
+  }
+};
+
+export {
+  getAllWarehouses,
+  findOneWarehouse,
+  deleteWarehouse,
+  getAllWarehouseInventories,
+};

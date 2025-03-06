@@ -8,5 +8,8 @@ router
   .route("/:id")
   .get(warehouseController.findOneWarehouse)
   .delete(warehouseController.deleteWarehouse);
+router
+  .route("/:id/inventories")
+  .get(warehouseController.getAllWarehouseInventories);
 
 export default router;

@@ -45,4 +45,47 @@ const findOneInventory = async (req, res) => {
   }
 };
 
-export { findOneInventory, getAllInventories };
+const createInventoryItem = async (req, res) => {
+  const { warehouse_id, item_name, description, category, status, quantity } = req.body;
+
+  if (!warehouse_id || !item_name || !description || !category || !status || quantity === undefined) {
+    return res.status(400).json({
+      message: "All fields (warehouse_id, item_name, description, category, status, quantity) are required.",
+    });
+  }
+
+  if (typeof quantity !== "number") {
+    return res.status(400).json({
+      message: "Quantity must be a number.",
+    });
+  }
+
+  try {
+    const warehouseExists = await knex("warehouses").where({ id: warehouse_id }).first();
+    if (!warehouseExists) {
+      return res.status(400).json({
+        message: `Warehouse with ID ${warehouse_id} does not exist.`,
+      });
+    }
+
+    const [newInventoryItem] = await knex("inventories")
+      .insert({
+        warehouse_id,
+        item_name,
+        description,
+        category,
+        status,
+        quantity,
+      })
+      .returning("*");
+
+    res.status(201).json(newInventoryItem);
+  } catch (error) {
+    console.error("Error creating inventory item:", error);
+    res.status(500).json({
+      message: "Unable to create new inventory item.",
+    });
+  }
+};
+
+export { findOneInventory, getAllInventories, createInventoryItem };

@@ -46,11 +46,20 @@ const findOneInventory = async (req, res) => {
 };
 
 const createInventoryItem = async (req, res) => {
-  const { warehouse_id, item_name, description, category, status, quantity } = req.body;
+  const { warehouse_id, item_name, description, category, status, quantity } =
+    req.body;
 
-  if (!warehouse_id || !item_name || !description || !category || !status || quantity === undefined) {
+  if (
+    !warehouse_id ||
+    !item_name ||
+    !description ||
+    !category ||
+    !status ||
+    quantity === undefined
+  ) {
     return res.status(400).json({
-      message: "All fields (warehouse_id, item_name, description, category, status, quantity) are required.",
+      message:
+        "All fields (warehouse_id, item_name, description, category, status, quantity) are required.",
     });
   }
 
@@ -61,7 +70,9 @@ const createInventoryItem = async (req, res) => {
   }
 
   try {
-    const warehouseExists = await knex("warehouses").where({ id: warehouse_id }).first();
+    const warehouseExists = await knex("warehouses")
+      .where({ id: warehouse_id })
+      .first();
     if (!warehouseExists) {
       return res.status(400).json({
         message: `Warehouse with ID ${warehouse_id} does not exist.`,
@@ -94,6 +105,28 @@ const createInventoryItem = async (req, res) => {
     res.status(500).json({
       message: "Unable to create new inventory item.",
     });
+  }
+};
+
+
+const deleteInventory = async (req, res) => {
+  try {
+    const invDeleted = await knex("inventories")
+      .where({
+        id: req.params.id,
+      })
+      .delete();
+
+    if (invDeleted === 0) {
+      return res
+        .status(404)
+        .json({ message: `Inventory with ID ${req.params.id} not found` });
+    }
+    res.sendStatus(204);
+  } catch {
+    res
+      .status(500)
+      .json({ message: `Error deleting inventory ${req.params.id}` });
   }
 };
 
@@ -150,4 +183,4 @@ const updateInventoryItem = async (req, res) => {
   }
 };
 
-export { findOneInventory, getAllInventories, createInventoryItem, updateInventoryItem };
+export { findOneInventory, getAllInventories, createInventoryItem, updateInventoryItem, deleteInventory };

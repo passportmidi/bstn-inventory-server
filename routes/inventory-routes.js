@@ -6,12 +6,12 @@ const router = express.Router();
 router
   .route("/")
   .get(inventoryController.getAllInventories)
-  .post(inventoryController.createInventoryItem)
-  .delete(inventoryController.deleteInventory);
+  .post(inventoryController.createInventoryItem);
 
 router
   .route("/:id")
   .get(inventoryController.findOneInventory)
-  .put(inventoryController.updateInventoryItem);
+  .put(inventoryController.updateInventoryItem)
+  .delete(inventoryController.deleteInventory);
 
 export default router;

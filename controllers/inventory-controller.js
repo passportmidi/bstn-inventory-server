@@ -26,21 +26,30 @@ const getAllInventories = async (req, res) => {
 
 const findOneInventory = async (req, res) => {
   try {
-    const inventoriesFound = await knex("inventories").where({
-      id: req.params.id,
-    });
+    const inventoryData = await knex("inventories")
+      .join("warehouses", "inventories.warehouse_id", "warehouses.id")
+      .select(
+        "inventories.id",
+        "warehouses.warehouse_name",
+        "inventories.item_name",
+        "inventories.description",
+        "inventories.category",
+        "inventories.status",
+        "inventories.quantity"
+      )
+      .where("inventories.id", req.params.id)
+      .first();
 
-    if (inventoriesFound.length === 0) {
+    if (!inventoryData) {
       return res.status(404).json({
         message: `Inventory with ID ${req.params.id} not found`,
       });
     }
 
-    const inventoryData = inventoriesFound[0];
     res.status(200).json(inventoryData);
   } catch (error) {
     res.status(500).json({
-      message: `Unable to retrieve inventory data for inventory with ID ${req.params.id}`,
+      message: `Unable to retrieve inventory data for ID ${req.params.id}`,
     });
   }
 };
@@ -108,7 +117,6 @@ const createInventoryItem = async (req, res) => {
   }
 };
 
-
 const deleteInventory = async (req, res) => {
   try {
     const invDeleted = await knex("inventories")
@@ -132,11 +140,20 @@ const deleteInventory = async (req, res) => {
 
 const updateInventoryItem = async (req, res) => {
   const { id } = req.params;
-  const { warehouse_id, item_name, description, category, status, quantity } = req.body;
+  const { warehouse_id, item_name, description, category, status, quantity } =
+    req.body;
 
-  if (!warehouse_id || !item_name || !description || !category || !status || quantity === undefined) {
+  if (
+    !warehouse_id ||
+    !item_name ||
+    !description ||
+    !category ||
+    !status ||
+    quantity === undefined
+  ) {
     return res.status(400).json({
-      message: "All fields (warehouse_id, item_name, description, category, status, quantity) are required.",
+      message:
+        "All fields (warehouse_id, item_name, description, category, status, quantity) are required.",
     });
   }
 
@@ -154,25 +171,27 @@ const updateInventoryItem = async (req, res) => {
       });
     }
 
-    const warehouseExists = await knex("warehouses").where({ id: warehouse_id }).first();
+    const warehouseExists = await knex("warehouses")
+      .where({ id: warehouse_id })
+      .first();
     if (!warehouseExists) {
       return res.status(400).json({
         message: `Warehouse with ID ${warehouse_id} does not exist.`,
       });
     }
 
-    await knex("inventories")
-      .where({ id })
-      .update({
-        warehouse_id,
-        item_name,
-        description,
-        category,
-        status,
-        quantity,
-      });
+    await knex("inventories").where({ id }).update({
+      warehouse_id,
+      item_name,
+      description,
+      category,
+      status,
+      quantity,
+    });
 
-    const updatedInventoryItem = await knex("inventories").where({ id }).first();
+    const updatedInventoryItem = await knex("inventories")
+      .where({ id })
+      .first();
 
     res.status(200).json(updatedInventoryItem);
   } catch (error) {
@@ -183,4 +202,10 @@ const updateInventoryItem = async (req, res) => {
   }
 };
 
-export { findOneInventory, getAllInventories, createInventoryItem, updateInventoryItem, deleteInventory };
+export {
+  findOneInventory,
+  getAllInventories,
+  createInventoryItem,
+  updateInventoryItem,
+  deleteInventory,
+};

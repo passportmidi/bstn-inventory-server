@@ -1,8 +1,10 @@
 import initKnex from "knex";
 import configuration from "../knexfile.js";
 const knex = initKnex(configuration);
+import pkg from 'validator';
+const { isEmail, isMobilePhone } = pkg;
 
-const getAllWarehouses = async (req, res) => {
+const getAllWarehouses = async (_req, res) => {
   try {
     const warehouses = await knex("warehouses").select("*");
     res.status(200).json(warehouses);
@@ -74,9 +76,87 @@ const getAllWarehouseInventories = async (req, res) => {
   }
 };
 
+// create a new warehouse
+const createWarehouse = async (req, res) => {
+  const {
+    warehouse_name,
+    address,
+    city,
+    country,
+    contact_name,
+    contact_position,
+    contact_phone,
+    contact_email,
+  } = req.body;
+
+  // Validation
+  if (!warehouse_name) {
+    return res.status(400).json({ error: "Warehouse name is required" });
+  }
+  if (!address) {
+    return res.status(400).json({ error: "Address is required" });
+  }
+  if (!city) {
+    return res.status(400).json({ error: "City is required" });
+  }
+  if (!country) {
+    return res.status(400).json({ error: "Country is required" });
+  }
+  if (!contact_name) {
+    return res.status(400).json({ error: "Contact name is required" });
+  }
+  if (!contact_position) {
+    return res.status(400).json({ error: "Contact position is required" });
+  }
+  if (!contact_phone) {
+    return res.status(400).json({ error: "Contact phone is required" });
+  }
+  if (!isMobilePhone(contact_phone)) {
+    return res.status(400).json({ error: "Invalid contact phone number" });
+  }
+  if (!contact_email) {
+    return res.status(400).json({ error: "Contact email is required" });
+  }
+  if (!isEmail(contact_email)) {
+    return res.status(400).json({ error: "Invalid contact email" });
+  }
+
+  try {
+    // Insert the new warehouse into the database
+    const [id] = await knex("warehouses").insert({
+      warehouse_name,
+      address,
+      city,
+      country,
+      contact_name,
+      contact_position,
+      contact_phone,
+      contact_email,
+    }).returning('id');
+
+    // Respond with the created warehouse data
+    res.status(201).json({
+      id,
+      warehouse_name,
+      address,
+      city,
+      country,
+      contact_name,
+      contact_position,
+      contact_phone,
+      contact_email,
+    });
+  } catch (error) {
+    console.error("Error creating warehouse:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+
 export {
   getAllWarehouses,
   findOneWarehouse,
   deleteWarehouse,
   getAllWarehouseInventories,
+  createWarehouse
 };

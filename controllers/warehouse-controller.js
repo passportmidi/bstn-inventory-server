@@ -2,7 +2,7 @@ import initKnex from "knex";
 import configuration from "../knexfile.js";
 const knex = initKnex(configuration);
 import pkg from 'validator';
-const { isEmail, isMobilePhone } = pkg;
+const { isEmail} = pkg;
 
 const getAllWarehouses = async (_req, res) => {
   try {
@@ -76,7 +76,6 @@ const getAllWarehouseInventories = async (req, res) => {
   }
 };
 
-// create a new warehouse
 const createWarehouse = async (req, res) => {
   const {
     warehouse_name,
@@ -89,54 +88,109 @@ const createWarehouse = async (req, res) => {
     contact_email,
   } = req.body;
 
-  // Validation
-  if (!warehouse_name) {
-    return res.status(400).json({ error: "Warehouse name is required" });
+  if (
+    !warehouse_name ||
+    !address ||
+    !city ||
+    !country ||
+    !contact_name ||
+    !contact_position ||
+    !contact_phone ||
+    !contact_email
+  ) {
+    return res.status(400).json({
+      message:
+        "All fields (warehouse_name, address, city, country, contact_name, contact_position, contact_phone, contact_email) are required.",
+    });
   }
-  if (!address) {
-    return res.status(400).json({ error: "Address is required" });
+
+  if (!contact_phone.startsWith("+1")) {
+    return res.status(400).json({
+      message: "Contact phone must start with +1.",
+    });
   }
-  if (!city) {
-    return res.status(400).json({ error: "City is required" });
-  }
-  if (!country) {
-    return res.status(400).json({ error: "Country is required" });
-  }
-  if (!contact_name) {
-    return res.status(400).json({ error: "Contact name is required" });
-  }
-  if (!contact_position) {
-    return res.status(400).json({ error: "Contact position is required" });
-  }
-  if (!contact_phone) {
-    return res.status(400).json({ error: "Contact phone is required" });
-  }
-  if (!isMobilePhone(contact_phone)) {
-    return res.status(400).json({ error: "Invalid contact phone number" });
-  }
-  if (!contact_email) {
-    return res.status(400).json({ error: "Contact email is required" });
-  }
+
   if (!isEmail(contact_email)) {
-    return res.status(400).json({ error: "Invalid contact email" });
+    return res.status(400).json({
+      message: "Invalid contact email.",
+    });
   }
 
   try {
-    // Insert the new warehouse into the database
-    const [id] = await knex("warehouses").insert({
-      warehouse_name,
-      address,
-      city,
-      country,
-      contact_name,
-      contact_position,
-      contact_phone,
-      contact_email,
-    }).returning('id');
+    const [id] = await knex("warehouses")
+      .insert({
+        warehouse_name,
+        address,
+        city,
+        country,
+        contact_name,
+        contact_position,
+        contact_phone,
+        contact_email,
+      })
+      .returning("id");
 
-    // Respond with the created warehouse data
-    res.status(201).json({
-      id,
+    const newWarehouse = await knex("warehouses").where({ id }).first();
+
+    res.status(201).json(newWarehouse);
+  } catch (error) {
+    console.error("Error creating warehouse:", error);
+    res.status(500).json({
+      message: "Unable to create new warehouse.",
+    });
+  }
+};
+
+const updateWarehouse = async (req, res) => {
+  const { id } = req.params;
+  const {
+    warehouse_name,
+    address,
+    city,
+    country,
+    contact_name,
+    contact_position,
+    contact_phone,
+    contact_email,
+  } = req.body;
+
+  if (
+    !warehouse_name ||
+    !address ||
+    !city ||
+    !country ||
+    !contact_name ||
+    !contact_position ||
+    !contact_phone ||
+    !contact_email
+  ) {
+    return res.status(400).json({
+      message:
+        "All fields (warehouse_name, address, city, country, contact_name, contact_position, contact_phone, contact_email) are required.",
+    });
+  }
+
+  if (!contact_phone.startsWith("+1")) {
+    return res.status(400).json({
+      message: "Contact phone must start with +1.",
+    });
+  }
+
+  if (!isEmail(contact_email)) {
+    return res.status(400).json({
+      message: "Invalid contact email.",
+    });
+  }
+
+  try {
+    const warehouseExists = await knex("warehouses").where({ id }).first();
+    if (!warehouseExists) {
+      return res.status(404).json({
+        message: `Warehouse with ID ${id} not found.`,
+      });
+    }
+
+    await knex("warehouses").where({ id }).update({
       warehouse_name,
       address,
       city,
@@ -146,17 +200,23 @@ const createWarehouse = async (req, res) => {
       contact_phone,
       contact_email,
     });
+
+    const updatedWarehouse = await knex("warehouses").where({ id }).first();
+
+    res.status(200).json(updatedWarehouse);
   } catch (error) {
-    console.error("Error creating warehouse:", error);
-    res.status(500).json({ error: "Internal server error" });
+    console.error("Error updating warehouse:", error);
+    res.status(500).json({
+      message: "Unable to update warehouse.",
+    });
   }
 };
-
 
 export {
   getAllWarehouses,
   findOneWarehouse,
   deleteWarehouse,
   getAllWarehouseInventories,
-  createWarehouse
+  createWarehouse,
+  updateWarehouse
 };

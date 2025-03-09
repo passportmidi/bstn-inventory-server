@@ -127,8 +127,7 @@ const createWarehouse = async (req, res) => {
         contact_position,
         contact_phone,
         contact_email,
-      })
-      .returning("id");
+      });
 
     const newWarehouse = await knex("warehouses").where({ id }).first();
 

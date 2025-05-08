@@ -1,1 +1,1 @@
-# instock-server
+# inventory-website-server
